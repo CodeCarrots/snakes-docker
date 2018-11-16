@@ -10,7 +10,7 @@ RUN useradd -M -U -d /srv/appenv app && \
     mkdir -p /srv/appenv && \
     chown app:app /srv/appenv
 
-ENV PYTHON_PIP_VERSION=8.1.1 \
+ENV \
     PYTHONUNBUFFERED=1 \
     LANG=C.UTF-8
 
@@ -50,7 +50,7 @@ WORKDIR /srv/appenv
 COPY snakes/requirements.txt /srv/appenv/
 
 RUN . /srv/appenv/py3env/bin/activate ; \
-    pip install --upgrade pip==$PYTHON_PIP_VERSION && \
+    pip install --upgrade pip && \
     pip install --no-cache-dir -r requirements.txt
 
 COPY snakes /srv/appenv/snakes
@@ -68,11 +68,13 @@ RUN mkdir -p /srv/appenv/app/static
 
 ## --- 8< ----
 
-USER app
-
 WORKDIR /srv/appenv/app
 
 COPY docker-entrypoint.sh /_run
+
+RUN /_run django-manage collectstatic -c --noinput
+
+USER app
 
 ENTRYPOINT ["/_run"]
 

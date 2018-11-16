@@ -1,0 +1,73 @@
+version: '3'
+
+
+volumes:
+  volume_db:
+  volume_static:
+
+
+networks:
+  net_db:
+  net_front:
+
+
+services:
+  redis:
+    image: redis:3.0
+    container_name: redis
+    networks:
+      - net_db
+    volumes:
+      - volume_db:/data
+    restart: always
+
+  snakes:
+    depends_on:
+      - redis
+    environment:
+      REDIS_HOST: redis
+    image: carrots/snakes-snakes:latest
+    build: ./appcode/
+    container_name: snakes
+    user: root
+    cap_add:
+      - SYS_ADMIN
+      - MKNOD
+    security_opt:
+      - apparmor:unconfined
+    networks:
+      - net_db
+    command: snakes-run
+    restart: always
+
+  django:
+    depends_on:
+      - redis
+    environment:
+      REDIS_HOST: redis
+      SECRET_KEY: thisIsNotARealSecretKeyReally
+    image: carrots/snakes-django:latest
+    build: ./appcode/
+    container_name: django
+    networks:
+      - net_db
+      - net_front
+    volumes:
+      - volume_static:/srv/appenv/app/static
+    command: django-run
+    restart: always
+
+  nginx:
+    depends_on:
+      - django
+    image: carrots/snakes-nginx:latest
+    build: ./nginx/
+    container_name: nginx
+    ports:
+      - "8000:80"
+    networks:
+      - net_front
+    volumes:
+      - volume_static:/srv/appenv/app/static
+    restart: always
+
