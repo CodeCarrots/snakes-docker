@@ -1,10 +1,4 @@
-FROM debian:jessie
-
-RUN apt-get update && \
-    apt-get install -o APT::Install-Recommends=false \
-                    -o APT::Install-Suggests=false -y \
-                    python3.4 python3.4-venv && \
-    apt-get clean
+FROM python:3.8-buster
 
 RUN useradd -M -U -d /srv/appenv app && \
     mkdir -p /srv/appenv && \
@@ -24,10 +18,11 @@ RUN mkdir -p /jail/zygote && \
              lib/x86_64-linux-gnu \
              usr/include \
              usr/lib && \
-    cp /usr/bin/python3 ./python && \
-    cp /bin/bash ./bin && \
+    cp -L /bin/bash ./bin/ && \
+    cp -L /usr/local/bin/python3.8 ./bin/python && \
     cd /lib/x86_64-linux-gnu && \
-    cp libc.so.6 \
+    cp -L libc.so.6 \
+       libcrypt.so.1 \
        libdl.so.2 \
        libexpat.so.1 \
        libm.so.6 \
@@ -36,14 +31,16 @@ RUN mkdir -p /jail/zygote && \
        libutil.so.1 \
        libz.so.1 \
        /jail/zygote/lib/x86_64-linux-gnu && \
-    cp /lib64/ld-linux-x86-64.so.2 /jail/zygote/lib64 && \
-    cp -R /usr/lib/python3.4 /jail/zygote/usr/lib/
+    cp -L /lib64/ld-linux-x86-64.so.2 /jail/zygote/lib64 && \
+    cp -RL /usr/local/lib/libpython3.8.so.1.0 \
+        /usr/local/lib/python3.8 \
+        /jail/zygote/usr/lib/
 
-#    cp -R /usr/include/python3.4m /jail/zygote/usr/include/ && \
+#    cp -R /usr/local/include/python3.8 /jail/zygote/usr/include/ && \
 
 ## --- 8< ----
 
-RUN python3 -m venv /srv/appenv/py3env
+RUN python3.8 -m venv /srv/appenv/py3env
 
 WORKDIR /srv/appenv
 
