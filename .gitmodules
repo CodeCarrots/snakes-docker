@@ -1,3 +1,4 @@
 [submodule "appcode/snakes"]
 	path = appcode/snakes
 	url = https://github.com/CodeCarrots/snakes.git
+	branch = master

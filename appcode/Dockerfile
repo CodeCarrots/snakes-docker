@@ -1,6 +1,8 @@
-FROM python:3.8-buster
+FROM python:3.8-alpine
 
-RUN useradd -M -U -d /srv/appenv app && \
+RUN \
+    addgroup app && \
+    adduser -D -H -h /srv/appenv -G app app && \
     mkdir -p /srv/appenv && \
     chown app:app /srv/appenv
 
@@ -11,27 +13,25 @@ ENV \
 ## --- 8< ----
 ## prepare the chroot jail here...
 
-RUN mkdir -p /jail/zygote && \
+RUN apk add bash procps
+
+RUN \
+    mkdir -p /jail/zygote && \
     cd /jail/zygote && \
-    mkdir -p bin \
-             lib64 \
-             lib/x86_64-linux-gnu \
-             usr/include \
-             usr/lib && \
+    mkdir -p \
+            bin \
+            lib \
+            usr/include \
+            usr/lib \
+        && \
     cp -L /bin/bash ./bin/ && \
     cp -L /usr/local/bin/python3.8 ./bin/python && \
-    cd /lib/x86_64-linux-gnu && \
-    cp -L libc.so.6 \
-       libcrypt.so.1 \
-       libdl.so.2 \
-       libexpat.so.1 \
-       libm.so.6 \
-       libpthread.so.0 \
-       librt.so.1 \
-       libutil.so.1 \
-       libz.so.1 \
-       /jail/zygote/lib/x86_64-linux-gnu && \
-    cp -L /lib64/ld-linux-x86-64.so.2 /jail/zygote/lib64 && \
+    cd /lib && \
+    cp -L \
+            ld-musl-x86_64.so.1 \
+            libc.musl-x86_64.so.1 \
+            libz.so.1 \
+        /jail/zygote/lib && \
     cp -RL /usr/local/lib/libpython3.8.so.1.0 \
         /usr/local/lib/python3.8 \
         /jail/zygote/usr/lib/
@@ -40,28 +40,25 @@ RUN mkdir -p /jail/zygote && \
 
 ## --- 8< ----
 
-RUN python3.8 -m venv /srv/appenv/py3env
-
 WORKDIR /srv/appenv
 
 COPY snakes/requirements.txt /srv/appenv/
 
-RUN . /srv/appenv/py3env/bin/activate ; \
+RUN \
     pip install --upgrade pip && \
-    pip install --no-cache-dir -r requirements.txt
+    pip install --no-cache-dir --requirement requirements.txt
 
 COPY snakes /srv/appenv/snakes
 
-RUN . /srv/appenv/py3env/bin/activate ; \
-    cd /srv/appenv/snakes && pip install .
+RUN \
+    cd /srv/appenv/snakes && \
+    pip install .
 
 COPY snakes/django_snakes /srv/appenv/app
 
-RUN . /srv/appenv/py3env/bin/activate ; \
-    python -m compileall app
+RUN python -m compileall app
 
 RUN mkdir -p /srv/appenv/app/static
-
 
 ## --- 8< ----
 

@@ -1,3 +1,5 @@
 #!/usr/bin/env bash
 
-docker-compose up --force-recreate --build --remove-orphans
+set -Eeuo pipefail
+
+docker-compose up --force-recreate --build --remove-orphans --abort-on-container-exit

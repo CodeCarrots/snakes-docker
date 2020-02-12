@@ -17,9 +17,17 @@ services:
     container_name: redis
     networks:
       - net_db
+    ports:
+      - "6379:6379"
     volumes:
       - volume_db:/data
-    restart: always
+    read_only: true
+    deploy:
+      restart_policy:
+        condition: on-failure
+        delay: 5s
+        max_attempts: 5
+        window: 120s
 
   snakes:
     depends_on:
@@ -68,6 +76,9 @@ services:
     networks:
       - net_front
     volumes:
+    volumes:
+      - /var/cache/nginx
+      - /var/run
       - volume_static:/srv/appenv/app/static
     restart: always
 
