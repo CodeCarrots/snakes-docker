@@ -1,6 +1,4 @@
-version: '3.7'
-
-
+---
 volumes:
   volume_db:
   volume_static:
@@ -13,7 +11,7 @@ networks:
 
 services:
   redis:
-    image: redis:5-alpine
+    image: redis:8-alpine
     container_name: redis
     networks:
       - net_db
@@ -75,7 +73,6 @@ services:
       - "8000:80"
     networks:
       - net_front
-    volumes:
     volumes:
       - /var/cache/nginx
       - /var/run
