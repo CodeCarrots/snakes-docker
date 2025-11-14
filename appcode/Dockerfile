@@ -1,4 +1,4 @@
-FROM python:3.8-alpine
+FROM python:3.14-alpine
 
 RUN \
     addgroup app && \
@@ -25,18 +25,17 @@ RUN \
             usr/lib \
         && \
     cp -L /bin/bash ./bin/ && \
-    cp -L /usr/local/bin/python3.8 ./bin/python && \
+    cp -L /usr/local/bin/python3.14 ./bin/python && \
     cd /lib && \
     cp -L \
             ld-musl-x86_64.so.1 \
             libc.musl-x86_64.so.1 \
-            libz.so.1 \
         /jail/zygote/lib && \
-    cp -RL /usr/local/lib/libpython3.8.so.1.0 \
-        /usr/local/lib/python3.8 \
+    cp -RL /usr/local/lib/libpython3.14.so.1.0 \
+        /usr/local/lib/python3.14 \
         /jail/zygote/usr/lib/
 
-#    cp -R /usr/local/include/python3.8 /jail/zygote/usr/include/ && \
+#    cp -R /usr/local/include/python3.14 /jail/zygote/usr/include/ && \
 
 ## --- 8< ----
 
